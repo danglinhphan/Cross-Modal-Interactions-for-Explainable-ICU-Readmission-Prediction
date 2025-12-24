@@ -1,0 +1,9 @@
+pandas
+numpy
+scikit-learn>=1.1
+interpret
+matplotlib
+seaborn
+imbalanced-learn
+joblib
+scikit-learn

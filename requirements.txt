@@ -1,0 +1,20 @@
+numpy>=1.22
+pandas>=2.0
+scikit-learn>=1.1
+xgboost>=1.7
+lightgbm>=3.3
+shap>=0.42
+imbalanced-learn>=0.9
+torch>=2.0
+transformers>=4.20
+sentence-transformers>=2.2
+optuna>=3.0
+sentencepiece>=0.1.97
+tqdm>=4.60
+interpret>=0.2
+
+# Clinical NLP dependencies
+spacy>=3.5
+medspacy>=1.0
+scispacy>=0.5
+negspacy>=1.0

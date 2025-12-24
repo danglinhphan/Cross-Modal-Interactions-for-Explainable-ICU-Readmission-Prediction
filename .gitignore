@@ -1,0 +1,35 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.venv/
+.venv*/
+.miniforge/
+.pytest_cache/
+
+# Mac OS
+.DS_Store
+
+# IDEs
+.idea/
+.vscode/
+
+# Data & Artifacts
+# These directories contain large files or reproducible artifacts
+dataset/
+cohort/*.csv
+cohort/note_embeddings/
+cohort/time_series/
+outputs/
+Train_model_XGB/outputs/
+backups/
+*.db
+*.pkl
+*.joblib
+*.pt
+*.pth
+*.h5
