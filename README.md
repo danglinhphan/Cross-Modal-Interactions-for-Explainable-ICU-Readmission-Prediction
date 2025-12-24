@@ -57,7 +57,22 @@ For every pair $(v, t)$, we check if the residual pattern of $v$ changes when $t
 ### Step 4: Retrain Final Model
 We select the Top-N (e.g., 50) ranked pairs and retrain the EBM from scracth, forcing it to learn these specific interaction terms $h(v, t)$.
 
-## 6. Results
+## 6. NLP & Data Pipeline
+We transform raw clinical text into usable features through a multi-stage pipeline:
+1.  **Cleaning:** Removal of de-identification patterns and noise.
+2.  **Segmentation:** `spaCy` splitting of sentences.
+3.  **Entity Extraction:**
+    *   **scispaCy**: For standard biomedical entities.
+    *   **medspaCy**: For clinical concepts and **Negation Detection** (Context Algorithm).
+    *   **UMLS Mapping**: Linking text to canonical medical IDs (CUIs).
+4.  **Feature Generation:** Creating binary flags for 41 specific clinical concepts (e.g., "Sepsis", "Pneumonia").
+
+## 7. LLM-based Explanation
+While EBM provides the mathematical "Why" (Risk Score + Top Factors), we use **Medical-Llama3-8B** (via Ollama) to translate this into a **Natural Language Summary** for doctors.
+*   **Input:** EBM Risk Score, Top Risk Contributors, and Active Cross-Interactions.
+*   **Output:** A coherent paragraph explaining the patient's status, e.g., *"The risk is elevated efficiently due to rising lactate, but the presence of liver disease suggests this may be chronic rather than acute sepsis."*
+
+## 8. Results
 Our **EBM-Cross** model achieves performance comparable to or better than "Black-Box" deep learning models while offering full transparency.
 
 | Metric | Score | Note |
@@ -66,13 +81,15 @@ Our **EBM-Cross** model achieves performance comparable to or better than "Black
 | **AUC-ROC** | **97.78%** | Excellent ranking capability |
 | **Accuracy** | 96.42% | |
 
-## 7. Repository Structure
+## 9. Repository Structure
 *   `Train_EBM/`: Code for training the EBM and running the FAST algorithm.
 *   `Train_model_XGB/`: XGBoost baselines.
 *   `ebm-llm-frontend/`: A Next.js web application to visualize the model's explanations for doctors.
 *   `cohort/`: Feature extraction and data processing logic.
+*   `data_preprocessing/`: NLP pipeline for parsing clinical notes.
+*   `LLM_Explanation/`: Module connecting EBM outputs to Llama3 for narrative generation.
 
-## 8. Usage
+## 10. Usage
 To train the model (assuming you have MIMIC-III access):
 
 ```bash
