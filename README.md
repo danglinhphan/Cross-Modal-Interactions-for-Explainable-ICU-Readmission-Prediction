@@ -45,7 +45,11 @@ This model captures the baseline risk of all features independently.
 
 ### Step 2: Compute Residuals
 We calculate the errors (residuals) of this model:
-$$ r = y - \hat{y}_{\text{main}} $$
+
+$$
+r = y - \hat{y}_{\text{main}}
+$$
+
 The residual $r$ represents the "unexplained" risk.
 
 ### Step 3: Rank Interactions
