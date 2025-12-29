@@ -1,0 +1,19 @@
+IMPORTANT NOTE FOR GITHUB PUSH
+==============================
+
+To prevent "File too large" errors (GitHub Limit: 100MB), the following files are ignored by .gitignore:
+- `ebm_final_glassbox_ensemble.pkl` (~170MB)
+- `Baselines/ebm_clinical_only.pkl`
+- `Baselines/ebm_text_only.pkl`
+- `Baselines/ebm_interaction_only.pkl`
+
+IF YOU WANT TO PUSH THESE MODELS TO GITHUB:
+1. Install Git LFS (Large File Storage): https://git-lfs.github.com/
+2. Run: 
+   `git lfs install`
+   `git lfs track "*.pkl"`
+   `git add .gitattributes`
+3. Then you can add and push the models.
+
+OTHERWISE:
+These files will simply be excluded from your commit. You can recreate them by running the training scripts provided in this folder.

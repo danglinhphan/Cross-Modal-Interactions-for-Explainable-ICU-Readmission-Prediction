@@ -1,0 +1,25 @@
+{
+  "clinical": {
+    "model": "Clinical_Only",
+    "features": 364,
+    "precision": 0.60790273556231,
+    "recall": 0.8695652173913043,
+    "f1": 0.7155635062611807,
+    "auroc": 0.9822373463724066
+  },
+  "text": {
+    "model": "Text_Only",
+    "features": 218,
+    "precision": 0.3643410852713178,
+    "recall": 0.6130434782608696,
+    "f1": 0.45705024311183146,
+    "auroc": 0.893915686533633
+  },
+  "interaction_only": {
+    "model": "Interaction_Only_Top50",
+    "precision": 0.49622166246851385,
+    "recall": 0.8565217391304348,
+    "f1": 0.6283891547049442,
+    "auroc": 0.9736209858596537
+  }
+}

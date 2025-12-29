@@ -1,0 +1,14 @@
+ABLATION STUDY: VITAL vs TEXT (No Interactions)
+=============================================
+1. Clinical Only (Vitals, Labs, Social): F1=0.7156
+   Precision: 0.6079, Recall: 0.8696
+
+2. Text Only (NLP, Nursing Notes): F1=0.4571
+   Precision: 0.3643, Recall: 0.6130
+
+Comparison Context:
+Full Ensemble (Phase 17) achieved F1 ~0.85.
+This study quantifies the independent contribution of each modality.
+3. Interaction Only (Top 50 Pairs): F1=0.6284
+   Precision: 0.4962, Recall: 0.8565
+   (This model uses NO single features, ONLY the joined pairs)
