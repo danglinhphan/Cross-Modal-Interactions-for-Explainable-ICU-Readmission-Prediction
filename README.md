@@ -14,7 +14,7 @@ The final, optimized version of the project is located in the **[Final_Deliverab
 
 > **[Go to Final Deliverables Folder](Final_Deliverables_Glassbox)**
 > Contains:
-> - **Champion Model** (`ebm_final_glassbox_ensemble.pkl`)
+> - **Champion Model** (`ebm_ensemble_strict.pkl` - Phase 19)
 > - **Training Code** (Reproducible Pipeline)
 > - **Deployment Instructions**
 > - **Detailed Metrics Report**

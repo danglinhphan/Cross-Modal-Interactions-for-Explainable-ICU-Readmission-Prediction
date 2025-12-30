@@ -132,16 +132,13 @@ def main():
     df_agg = df_clean.groupby('HADM_ID')['TEXT'].apply(lambda x: ' '.join(x)).reset_index()
     print(f"Aggregated texts for {len(df_agg)} admissions.")
     
-    # Vectorize
-    print("Vectorizing...")
-    vectorizer = TfidfVectorizer(
-        max_features=100,
-        stop_words='english',
-        ngram_range=(1, 2),
-        min_df=0.01, # Appear in at least 1% of docs
-        max_df=0.9
-    )
-    
+    # Save Raw Text for Honest Training (Phase 18)
+    raw_output_path = os.path.join(base_dir, 'cohort/phase17_honest_text.csv')
+    df_agg.to_csv(raw_output_path, index=False)
+    print(f"Saved {len(df_agg)} raw text rows to {raw_output_path}")
+
+    # Vectorize (Legacy Leakage Path - kept for compatibility or reference if needed, but we rely on raw text now)
+    print("Vectorizing (Legacy Global Mode)...")
     X = vectorizer.fit_transform(df_agg['TEXT'])
     names = [f"tfidf_{n}" for n in vectorizer.get_feature_names_out()]
     

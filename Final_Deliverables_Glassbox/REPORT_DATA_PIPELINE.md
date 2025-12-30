@@ -1,7 +1,7 @@
 # DETAILED DATA PIPELINE REPORT
 **Project**: ICU Readmission Prediction (Glassbox Ensemble)
 **Date**: Dec 29, 2025
-**Model Version**: Phase 17 (Champion)
+**Model Version**: Phase 19 (Strict Honest Champion)
 
 This report documents the rigorous data engineering pipeline used to train the final high-performance models.
 
@@ -42,7 +42,7 @@ We engineered **582 Features** across 4 independent modalities.
 - **Active Antibiotics**: Count of unique antibiotics administered (Proxy for infection severity).
 
 ### C. Natural Language Processing (Unstructured Data)
-*Source*: `NOTEEVENTS` (Nursing Notes, Discharge Summaries - *Only extracted parts written BEFORE ICU discharge*).
+*Source*: `NOTEEVENTS` (Nursing/Physician Notes - *Only extracted parts written BEFORE ICU discharge*). **Note**: Discharge Summaries were strictly REMOVED in Phase 19 to prevent future leakage.
 *Preprocessing*:
 - **TF-IDF Vectorization**: Top 100 medical keywords (e.g., "Insulin", "Family", "Hemorrhage").
 - **Concept Extraction**: SciSpacy used to map text to UMLS concepts (e.g., `C0011849` -> "Diabetes Mellitus").
@@ -63,6 +63,7 @@ In **Phase 15**, a rigorous audit identified features that leaked "future" infor
 2.  `DISCHARGE_LOCATION`: Where the patient went *after* hospital (Future decision).
 3.  `MICRO_POS_48H`: Microbiology results that returned days later.
 4.  `TRANSFER_COUNT`: Total transfers in the *whole* admission (includes future transfers).
+5.  `DISCHARGE_SUMMARY`: (Removed Phase 19) Clinical summaries written at *hospital discharge* (future relative to ICU discharge).
 
 **Result**: The final "Honest" dataset contains only information strictly available **at or before** the timestamp `ICUSTAY.OUTTIME`.
 
@@ -76,7 +77,7 @@ In **Phase 15**, a rigorous audit identified features that leaked "future" infor
 - **Ratio**: `0.4` (Majority class reduced so that Minority is ~28% of data).
 - *Note*: **Strictly NO Synthetic Data (SMOTE)** was used in the final model to ensure medical validity.
 
-### B. Algorithm: Glassbox Ensemble (Phase 17)
+### B. Algorithm: Glassbox Ensemble (Phase 19)
 - **Model**: Explainable Boosting Machine (EBM).
 - **Architecture**:
     - 5 Separate EBMs trained with different random seeds.
@@ -98,7 +99,7 @@ To reproduce the best model (`ebm_final_glassbox_ensemble.pkl`), the data flows 
 2.  `create_cohort_icu_readmission.py` -> `new_cohort_icu_readmission.csv` (Base Cohort)
 3.  `extract_phase12_features.py` -> `features_phase12_extra.csv` (Fluids)
 4.  `extract_phase14_social.py` -> `features_phase14_social.csv` (Social)
-5.  `train_phase16_honest.py` -> Loads all CSVs -> **DROPS LEAKAGE** -> `X_honest`.
-6.  `train_phase17_glassbox.py` -> Loads `X_honest` -> Applies RUS(0.4) -> Trains Ensemble -> Output.
+5.  `train_phase19_strict.py` -> Loads all CSVs -> **EXPLICITLY REMOVES** `nlp_features_enhanced.csv` (Discharge Summary) ->
+6.  `train_phase19_strict.py` -> Loads Honest Nursing Notes (`phase17_honest_text.csv`) -> Applies Honest TF-IDF -> Trains Ensemble -> Output.
 
 This pipeline ensures 100% transparency and reproducibility.

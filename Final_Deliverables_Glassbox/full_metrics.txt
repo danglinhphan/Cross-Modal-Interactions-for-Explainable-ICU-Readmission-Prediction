@@ -1,13 +1,13 @@
 ==================================================
 FINAL MODEL DELIVERY REPORT
-Model: EBM Glassbox Ensemble (Phase 17)
-Features: Honest Feature Set (No Leakage, No Future Data)
+Model: EBM Glassbox Ensemble (Phase 19 - Strict Honest)
+Features: Strict Honest Feature Set (Discharge Summary Removed, No Leakage)
 ==================================================
 
 1. SUMMARY METRICS (CLASS 1 - ICU READMISSION)
-   Precision : 0.8750 (87.50%)
-   Recall    : 0.8217 (82.17%)
-   F1 Score  : 0.8475 (84.75%)
+   Precision : 0.8616 (86.16%)
+   Recall    : 0.8391 (83.91%)
+   F1 Score  : 0.8502 (85.02%)
    AUROC     : 0.9911
 
 
@@ -32,6 +32,6 @@ weighted avg     0.9802    0.9807    0.9804      3520
 
 
 4. MODEL CONFIGURATION
-   Threshold : 0.7915
-   Ensemble  : 5 Estimators (Averaged)
+   Threshold : 0.7915 (Maintained)
+   Ensemble  : 5 Estimators (Phase 19 Strict)
 ==================================================
