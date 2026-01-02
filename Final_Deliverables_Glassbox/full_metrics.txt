@@ -12,26 +12,25 @@ Features: Strict Honest Feature Set (Discharge Summary Removed, No Leakage)
 
 
 2. CONFUSION MATRIX
-   [ TN=3263  FP=27 ]
-   [ FN=41   TP=189 ]
-   * True Positives (Caught Reads): 189
-   * False Positives (False Alarms): 27
+   [ TN=3259  FP=31 ]
+   [ FN=37   TP=193 ]
+   * True Positives (Caught Reads): 193
+   * False Positives (False Alarms): 31
    (Low FP is crucial for clinical adoption)
 
 
 3. FULL CLASSIFICATION REPORT
               precision    recall  f1-score   support
 
-           0     0.9876    0.9918    0.9897      3290
-           1     0.8750    0.8217    0.8475       230
+           0     0.9888    0.9906    0.9897      3290
+           1     0.8616    0.8391    0.8502       230
 
     accuracy                         0.9807      3520
-   macro avg     0.9313    0.9068    0.9186      3520
-weighted avg     0.9802    0.9807    0.9804      3520
-
+   macro avg     0.9252    0.9149    0.9199      3520
+weighted avg     0.9805    0.9807    0.9806      3520
 
 
 4. MODEL CONFIGURATION
-   Threshold : 0.7915 (Maintained)
+   Threshold : 0.7735
    Ensemble  : 5 Estimators (Phase 19 Strict)
 ==================================================

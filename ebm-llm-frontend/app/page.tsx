@@ -23,6 +23,7 @@ export default function HealthcareDashboard() {
   const [isLoading, setIsLoading] = useState(false)
   const [nlpHighlights, setNlpHighlights] = useState<{ feature: string, text: string, start: number, end: number }[]>([])
   const [activeNlpFeatures, setActiveNlpFeatures] = useState<string[]>([])
+  const [highlightedHtml, setHighlightedHtml] = useState<string>("")
 
   // Helper to render highlighted clinical notes
   const renderHighlightedNotes = (notes: string, highlights: typeof nlpHighlights) => {
@@ -117,7 +118,7 @@ export default function HealthcareDashboard() {
     setActiveNlpFeatures([])  // Clear previous active features
     setIsLoading(true)
 
-    // Call real EBM + LLM API
+    // Call Phase 19 API
     if (patient) {
       try {
         // Prepare patient data (remove id field)
@@ -129,27 +130,6 @@ export default function HealthcareDashboard() {
         const clinicalNotes = patientFeatures.clinical_notes || patientFeatures.DISCHARGE_SUMMARY_TEXT || ""
         delete patientFeatures.clinical_notes
         delete patientFeatures.DISCHARGE_SUMMARY_TEXT
-
-        // Call NLP extraction for highlights
-        if (clinicalNotes) {
-          try {
-            const nlpResponse = await fetch("http://localhost:8000/extract-nlp", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ clinical_notes: clinicalNotes })
-            })
-            if (nlpResponse.ok) {
-              const nlpResult = await nlpResponse.json()
-              setNlpHighlights(nlpResult.highlights)
-              setActiveNlpFeatures(Object.entries(nlpResult.features)
-                .filter(([_, v]) => v === 1)
-                .map(([k, _]) => k))
-              console.log("🔍 NLP features:", nlpResult.active_count, "active")
-            }
-          } catch (e) {
-            console.warn("NLP extraction failed:", e)
-          }
-        }
 
         console.log("📤 Sending to API:", { patient_data: patientFeatures, clinical_notes: clinicalNotes?.substring(0, 100) })
 
@@ -180,9 +160,19 @@ export default function HealthcareDashboard() {
             impact: f.impact,
             value: f.value
           })),
-          llmExplanation: result.llmExplanation
+          llmExplanation: result.llmExplanation || "No explanation available."
         }
+
+        // Restore highlights from NLP structure
+        if (result.nlpHighlights) {
+          setNlpHighlights(result.nlpHighlights)
+          // Derive active features from highlights
+          const uniqueFeatures = Array.from(new Set(result.nlpHighlights.map((h: any) => h.feature))) as string[]
+          setActiveNlpFeatures(uniqueFeatures)
+        }
+
         setPrediction(prediction)
+
       } catch (error) {
         console.error("❌ API call failed:", error)
         // Fallback to mock data if API fails

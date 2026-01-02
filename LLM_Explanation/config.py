@@ -25,10 +25,12 @@ class LLMConfig:
     prompt_template: str = "patient_explanation.txt"
     
     # EBM Model paths
-    ebm_model_path: str = str(EBM_MODEL_DIR / "final_model.pkl")
-    feature_names_path: str = str(EBM_MODEL_DIR / "feature_info.json")
-    cross_interactions_path: str = str(EBM_MODEL_DIR / "forced_interactions.json")
-    threshold: float = 0.535  # Optimal threshold for 75.22% F1/Precision/Recall
+    # Phase 19: Strict Honest (TF-IDF Auto) - ACTIVE
+    ebm_model_path: str = "/Users/phandanglinh/Desktop/VRES/outputs/ebm_phase19_strict/ebm_ensemble_strict.pkl"
+    vectorizer_path: str = "/Users/phandanglinh/Desktop/VRES/outputs/ebm_phase19_strict/tfidf_vectorizer.pkl"
+    feature_names_path: str = "/Users/phandanglinh/Desktop/VRES/outputs/ebm_phase19_strict/feature_info.json"
+    cross_interactions_path: str = "/Users/phandanglinh/Desktop/VRES/outputs/ebm_phase19_strict/ebm_interactions.json"
+    threshold: float = 0.7735  # Phase 19 Optimal Threshold
     
     # Output settings
     top_k_factors: int = 5

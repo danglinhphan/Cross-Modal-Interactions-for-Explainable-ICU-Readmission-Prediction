@@ -97,7 +97,10 @@ class PredictionResponse(BaseModel):
     riskLevel: str = Field(..., description="Risk level: Low/Moderate/Elevated/High")
     features: List[Feature] = Field(..., description="Top contributing features")
     crossInteractions: List[CrossInteraction] = Field(default=[], description="Active cross-interactions")
+    features: List[Feature] = Field(..., description="Top contributing features")
+    crossInteractions: List[CrossInteraction] = Field(default=[], description="Active cross-interactions")
     llmExplanation: str = Field(..., description="Patient-friendly explanation from LLM")
+    nlpHighlights: List[NLPHighlight] = Field(default=[], description="NLP highlights in clinical notes")
 
 
 class HealthResponse(BaseModel):
@@ -174,8 +177,6 @@ async def predict(request: PredictionRequest):
             for i in ebm_result.cross_interactions
         ]
         
-        # Generate LLM explanation if requested
-        llm_explanation = ""
         if request.generate_llm_explanation:
             try:
                 llm = get_llm_service()
@@ -189,14 +190,28 @@ async def predict(request: PredictionRequest):
                 llm_explanation = _generate_fallback_explanation(ebm_result)
         else:
             llm_explanation = _generate_fallback_explanation(ebm_result)
+            
+        # Extract NLP Highlights for Visualization
+        # Use TF-IDF vectorizer from EBMExplainer if available (Phase 19 requirement)
+        if ebm.vectorizer:
+            h_data = ebm.extract_tfidf_highlights(request.clinical_notes or "")
+            highlights = [NLPHighlight(**h) for h in h_data]
+            logger.info(f"Generated {len(highlights)} TF-IDF highlights")
+        else:
+            # Fallback to regex extractor if no vectorizer
+            from LLM_Explanation.nlp_extractor import NLPExtractor
+            extractor = NLPExtractor()
+            nlp_res = extractor.extract_with_positions(request.clinical_notes or "")
+            highlights = [NLPHighlight(**h) for h in nlp_res["highlights"]]
         
         return PredictionResponse(
             riskScore=ebm_result.risk_score * 100,  # Convert to percentage
-            confidence=75.22,  # F1 score from ebm_optimized_final model
+            confidence=85.02,  # F1 Score from full_metrics.txt (Global Model Performance)
             riskLevel=ebm_result.risk_level,
             features=features,
             crossInteractions=interactions,
-            llmExplanation=llm_explanation
+            llmExplanation=llm_explanation,
+            nlpHighlights=highlights
         )
         
     except Exception as e:

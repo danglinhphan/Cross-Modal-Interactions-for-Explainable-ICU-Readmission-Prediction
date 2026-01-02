@@ -22,6 +22,7 @@ class EBMExplainer:
         self.config = config or LLMConfig()
         self.model = None
         self.feature_names = None
+        self.vectorizer = None
         self.cross_interactions = None
         self.feature_mappings = None
         self._load_resources()
@@ -36,6 +37,18 @@ class EBMExplainer:
             logger.info(f"Loaded EBM model from {model_path}")
         else:
             logger.warning(f"EBM model not found at {model_path}")
+
+        # Load Vectorizer (Phase 19)
+        if hasattr(self.config, 'vectorizer_path'):
+            vec_path = Path(self.config.vectorizer_path)
+            if vec_path.exists():
+                with open(vec_path, 'rb') as f:
+                    self.vectorizer = pickle.load(f)
+                logger.info(f"Loaded Vectorizer from {vec_path}")
+            else:
+                self.vectorizer = None
+        else:
+            self.vectorizer = None
         
         # Load feature names
         feature_path = Path(self.config.feature_names_path)
@@ -129,11 +142,22 @@ class EBMExplainer:
         # Create DataFrame for prediction
         df = pd.DataFrame([patient_data])
         
+        # Calculate TF-IDF first if available (Phase 19)
+        if self.vectorizer and clinical_notes:
+            tfidf_matrix = self.vectorizer.transform([clinical_notes])
+            feature_names = [f"tfidf_{n}" for n in self.vectorizer.get_feature_names_out()]
+            tfidf_df = pd.DataFrame(tfidf_matrix.toarray(), columns=feature_names, index=df.index)
+            # Use concat but ensure we don't duplicate if they already exist in patient_data for some reason
+            df = pd.concat([df, tfidf_df], axis=1)
+
         # Ensure all required features exist (create missing as NaN)
         if self.feature_names:
-            missing_cols = {feat: np.nan for feat in self.feature_names if feat not in df.columns}
+            # Only add features that are TRULY missing
+            missing_cols = {feat: 0.0 for feat in self.feature_names if feat not in df.columns}
             if missing_cols:
                 df = pd.concat([df, pd.DataFrame(missing_cols, index=df.index)], axis=1)
+            
+            # Reorder and select exactly the features needed by the model
             df = df[self.feature_names]
         
         # Convert all columns to numeric, fill NaN with 0 for EBM
@@ -141,8 +165,16 @@ class EBMExplainer:
             df[col] = pd.to_numeric(df[col], errors='coerce')
         df = df.fillna(0)
         
-        # Get prediction probability
-        proba = self.model.predict_proba(df)[:, 1][0]
+        # Get prediction probability (Ensemble Average)
+        if isinstance(self.model, list):
+            # Ensemble
+            probas = []
+            for m in self.model:
+                 probas.append(m.predict_proba(df)[:, 1][0])
+            proba = float(np.mean(probas))
+        else:
+            # Single Model
+            proba = self.model.predict_proba(df)[:, 1][0]
         risk_level = self._get_risk_level(proba)
         
         # Extract local explanation
@@ -166,7 +198,9 @@ class EBMExplainer:
         
         try:
             # Use EBM's built-in explain_local
-            explanation = self.model.explain_local(df)
+            # If ensemble, use the first model for explanation (approximation)
+            target_model = self.model[0] if isinstance(self.model, list) else self.model
+            explanation = target_model.explain_local(df)
             data = explanation.data(0)  # Get first (only) row
             
             if data is not None:
@@ -247,4 +281,39 @@ class EBMExplainer:
         patients_data: List[Dict[str, Any]]
     ) -> List[ExplanationResult]:
         """Generate explanations for multiple patients."""
-        return [self.explain(p) for p in patients_data]
+    def extract_tfidf_highlights(self, text: str) -> List[Dict]:
+        """
+        Extract positions of TF-IDF terms present in the text.
+        Returns list of dicts with 'feature', 'text', 'start', 'end'.
+        """
+        if not self.vectorizer or not text:
+            return []
+            
+        highlights = []
+        feature_names = self.vectorizer.get_feature_names_out()
+        
+        # Create a set for O(1) lookup
+        vocab_set = set(feature_names)
+        
+        # Simple tokenization to find matches (aligned with sklearn's token generation roughly)
+        # We need to find the raw text positions, so we iterate regex matches
+        import re
+        # This regex matches words similar to standard tokenizers
+        token_pattern = re.compile(r'(?u)\b\w\w+\b')
+        
+        for match in token_pattern.finditer(text.lower()):
+            word = match.group()
+            if word in vocab_set:
+                # This word is in the TF-IDF vocabulary
+                highlights.append({
+                    "feature": f"tfidf_{word}",  # Consistent naming
+                    "text": text[match.start():match.end()], # Original case
+                    "start": match.start(),
+                    "end": match.end()
+                })
+                
+        # Handle n-grams (2-grams) if vectorizer has them
+        # This is a bit more complex, for now 1-grams are covered.
+        # To strictly match Phase 19's 'highlight_text', we just need to ensure vocabulary terms are highlighted.
+        
+        return highlights
